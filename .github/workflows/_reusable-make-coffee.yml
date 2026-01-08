@@ -1,0 +1,75 @@
+name: Reusable - Make Coffee
+
+on:
+  workflow_call:  # This workflow can be CALLED by other workflows
+    inputs:
+      coffee_type:
+        description: "Type of coffee to make"
+        type: string
+        required: true
+      
+      size:
+        description: "Size (small, medium, large)"
+        type: string
+        required: true
+      
+      customer_name:
+        description: "Customer name"
+        type: string
+        required: false
+        default: "Customer"
+
+jobs:
+  make-coffee:
+    name: "Make ${{ inputs.size }} ${{ inputs.coffee_type }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Take order
+        run: |
+          echo "📝 Order received!"
+          echo "Customer: ${{ inputs.customer_name }}"
+          echo "Drink: ${{ inputs.size }} ${{ inputs.coffee_type }}"
+      
+      - name: Grind beans
+        run: |
+          echo "🔧 Grinding fresh beans..."
+          sleep 1
+          echo "✅ Beans ground!"
+      
+      - name: Brew coffee
+        run: |
+          echo "☕ Brewing ${{ inputs.coffee_type }}..."
+          
+          # Different drinks take different times
+          if [ "${{ inputs.coffee_type }}" == "espresso" ]; then
+            echo "⚡ Quick espresso shot - 15 seconds"
+            sleep 1
+          elif [ "${{ inputs.coffee_type }}" == "latte" ]; then
+            echo "🥛 Brewing espresso and steaming milk - 45 seconds"
+            sleep 2
+          else
+            echo "☕ Brewing - 30 seconds"
+            sleep 1
+          fi
+          
+          echo "✅ Brewing complete!"
+      
+      - name: Prepare drink
+        run: |
+          echo "🎨 Finalizing drink..."
+          
+          if [ "${{ inputs.coffee_type }}" == "latte" ]; then
+            echo "🎨 Creating latte art..."
+          fi
+          
+          echo "✅ Drink is ready!"
+      
+      - name: Serve
+        run: |
+          echo "════════════════════════════════"
+          echo "✅ ORDER COMPLETE"
+          echo "════════════════════════════════"
+          echo "Customer: ${{ inputs.customer_name }}"
+          echo "Drink: ${{ inputs.size }} ${{ inputs.coffee_type }}"
+          echo "Status: Ready for pickup!"
+          echo "════════════════════════════════"
