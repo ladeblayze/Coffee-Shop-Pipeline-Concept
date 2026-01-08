@@ -1,0 +1,56 @@
+name: Lesson 4 - Using Reusable Workflows
+
+on:
+  workflow_dispatch:
+    inputs:
+      order_1:
+        description: "First order"
+        type: choice
+        options:
+          - latte
+          - cappuccino
+          - espresso
+          - americano
+      
+      order_2:
+        description: "Second order"
+        type: choice
+        options:
+          - latte
+          - cappuccino
+          - espresso
+          - americano
+
+jobs:
+  # Make first drink by calling the reusable workflow
+  make-first-drink:
+    name: "Order 1: Make drink"
+    uses: ./.github/workflows/_reusable-make-coffee.yml  # ← CALLING the reusable workflow
+    with:
+      coffee_type: ${{ inputs.order_1 }}
+      size: "medium"
+      customer_name: "Alice"
+
+  # Make second drink (runs at the SAME TIME as first)
+  make-second-drink:
+    name: "Order 2: Make drink"
+    uses: ./.github/workflows/_reusable-make-coffee.yml  # ← CALLING it again
+    with:
+      coffee_type: ${{ inputs.order_2 }}
+      size: "large"
+      customer_name: "Bob"
+
+  # After both drinks are done, ring them up
+  checkout:
+    name: "Ring up both orders"
+    runs-on: ubuntu-latest
+    needs: [make-first-drink, make-second-drink]  # ← WAIT for BOTH drinks
+    steps:
+      - name: Calculate total
+        run: |
+          echo "💰 Calculating total..."
+          echo "Alice's ${{ inputs.order_1 }}: \$4.50"
+          echo "Bob's ${{ inputs.order_2 }}: \$5.00"
+          echo "─────────────────"
+          echo "Total: \$9.50"
+          echo "✅ Thank you!"
