@@ -1,0 +1,139 @@
+name: Lesson 1 - Basic Coffee Shop
+
+# When should this run?
+on:
+  workflow_dispatch:  # Manual trigger - you click a button
+    inputs:
+      shift:
+        description: "Which shift to run?"
+        type: choice
+        required: true
+        options:
+          - morning
+          - afternoon
+          - evening
+          - closing
+      
+      location:
+        description: "Which store location?"
+        type: choice
+        required: true
+        options:
+          - downtown
+          - airport
+          - mall
+
+# What should happen?
+jobs:
+  morning-prep:
+    # Only run this job if user selected "morning"
+    if: ${{ inputs.shift == 'morning' }}
+    name: "Morning: Prepare the store"
+    runs-on: ubuntu-latest  # Use a Linux computer
+    
+    steps:
+      - name: Turn on lights
+        run: echo "💡 Lights are now on at ${{ inputs.location }} store"
+      
+      - name: Start coffee machines
+        run: |
+          echo "☕ Starting espresso machine..."
+          echo "☕ Starting drip coffee maker..."
+          echo "☕ All machines are warming up!"
+      
+      - name: Check inventory
+        run: |
+          echo "📦 Checking inventory for ${{ inputs.location }} store..."
+          
+          # Different stores need different supplies
+          if [ "${{ inputs.location }}" == "airport" ]; then
+            echo "⚠️  Airport store needs EXTRA milk (high traffic)"
+            echo "✅ Coffee beans: OK"
+            echo "✅ Cups: OK"
+          elif [ "${{ inputs.location }}" == "downtown" ]; then
+            echo "✅ Milk: OK"
+            echo "✅ Coffee beans: OK"
+            echo "✅ Pastries: Freshly delivered!"
+          else
+            echo "✅ All inventory looks good!"
+          fi
+      
+      - name: Morning prep complete
+        run: |
+          echo "🎉 Morning prep finished!"
+          echo "Store is ready to open at ${{ inputs.location }}"
+
+  afternoon-service:
+    if: ${{ inputs.shift == 'afternoon' }}
+    name: "Afternoon: Serve customers"
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check current status
+        run: |
+          echo "🕐 Current shift: Afternoon"
+          echo "📍 Location: ${{ inputs.location }}"
+      
+      - name: Brew fresh coffee
+        run: |
+          echo "☕ Brewing fresh coffee batch..."
+          sleep 2  # Simulate brewing time
+          echo "✅ Fresh coffee ready!"
+      
+      - name: Serve rush hour
+        run: |
+          echo "👥 Afternoon rush starting..."
+          
+          # Airport has biggest rush
+          if [ "${{ inputs.location }}" == "airport" ]; then
+            echo "✈️  Heavy traffic - 47 customers served"
+          elif [ "${{ inputs.location }}" == "downtown" ]; then
+            echo "🏢 Office workers - 32 customers served"
+          else
+            echo "🛍️  Shopping crowd - 25 customers served"
+          fi
+          
+          echo "✅ Rush hour handled successfully!"
+
+  evening-closing:
+    if: ${{ inputs.shift == 'closing' }}
+    name: "Closing: Clean and secure"
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Start closing procedures
+        run: echo "🌙 Beginning closing procedures for ${{ inputs.location }}"
+      
+      - name: Clean equipment
+        run: |
+          echo "🧹 Cleaning espresso machines..."
+          echo "🧹 Wiping down counters..."
+          echo "🧹 Mopping floors..."
+          echo "✅ Store is clean!"
+      
+      - name: Count cash register
+        run: |
+          echo "💰 Counting cash register..."
+          
+          # Generate random sales numbers for fun
+          SALES=$((1000 + RANDOM % 1000))
+          echo "Total sales today: \$$SALES"
+          echo "Cash: \$$(($SALES * 60 / 100))"
+          echo "Credit cards: \$$(($SALES * 40 / 100))"
+      
+      - name: Secure store
+        run: |
+          echo "🔒 Locking doors..."
+          echo "🔒 Setting alarm..."
+          echo "🔒 Turning off lights..."
+          echo "✅ ${{ inputs.location }} store is secured for the night"
+      
+      - name: Closing summary
+        run: |
+          echo "════════════════════════════════"
+          echo "📊 CLOSING SUMMARY"
+          echo "════════════════════════════════"
+          echo "Location: ${{ inputs.location }}"
+          echo "Date: $(date)"
+          echo "Status: ✅ Successfully closed"
+          echo "════════════════════════════════"
