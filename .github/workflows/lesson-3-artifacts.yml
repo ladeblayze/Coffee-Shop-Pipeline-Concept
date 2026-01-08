@@ -1,0 +1,143 @@
+name: Lesson 3 - Artifacts (Saving Data Between Jobs)
+
+on:
+  workflow_dispatch:
+    inputs:
+      location:
+        description: "Which store?"
+        type: choice
+        options:
+          - downtown
+          - airport
+          - mall
+
+jobs:
+  # Job 1: Take morning inventory and SAVE it
+  morning-inventory:
+    name: "Morning: Count inventory"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Count supplies
+        run: |
+          echo "📦 Taking morning inventory at ${{ inputs.location }}..."
+          
+          # Create an inventory file
+          echo "MORNING INVENTORY REPORT" > inventory.txt
+          echo "========================" >> inventory.txt
+          echo "Location: ${{ inputs.location }}" >> inventory.txt
+          echo "Date: $(date)" >> inventory.txt
+          echo "" >> inventory.txt
+          echo "Coffee beans: 50 lbs" >> inventory.txt
+          echo "Milk: 20 gallons" >> inventory.txt
+          echo "Cups: 500 units" >> inventory.txt
+          echo "Sugar: 10 lbs" >> inventory.txt
+          echo "========================" >> inventory.txt
+          
+          # Show what we saved
+          cat inventory.txt
+      
+      - name: Save morning inventory (UPLOAD ARTIFACT)
+        uses: actions/upload-artifact@v4
+        with:
+          name: morning-inventory-${{ inputs.location }}
+          path: inventory.txt
+          retention-days: 90  # Keep for 90 days
+      
+      - name: Create sales tracking file
+        run: |
+          echo "SALES LOG" > sales.txt
+          echo "=========" >> sales.txt
+          echo "Morning sales will be tracked here" >> sales.txt
+      
+      - name: Save sales file
+        uses: actions/upload-artifact@v4
+        with:
+          name: sales-log-${{ inputs.location }}
+          path: sales.txt
+
+  # Job 2: Operate during the day
+  daily-operations:
+    name: "During the day: Serve customers"
+    runs-on: ubuntu-latest
+    needs: morning-inventory
+    steps:
+      - name: Serve customers
+        run: |
+          echo "☕ Serving customers throughout the day..."
+          echo "Morning rush: 30 customers"
+          echo "Lunch rush: 45 customers"
+          echo "Afternoon: 25 customers"
+          echo "Total customers: 100"
+          
+          # Create end-of-day report
+          echo "END OF DAY SALES" > daily-sales.txt
+          echo "================" >> daily-sales.txt
+          echo "Total customers: 100" >> daily-sales.txt
+          echo "Revenue: \$1,250" >> daily-sales.txt
+          echo "Best seller: Caramel Latte" >> daily-sales.txt
+          
+          cat daily-sales.txt
+      
+      - name: Save daily sales
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-sales-${{ inputs.location }}
+          path: daily-sales.txt
+
+  # Job 3: Take evening inventory and COMPARE with morning
+  evening-inventory:
+    name: "Evening: Count inventory and compare"
+    runs-on: ubuntu-latest
+    needs: daily-operations
+    steps:
+      - name: Download morning inventory (DOWNLOAD ARTIFACT)
+        uses: actions/download-artifact@v4
+        with:
+          name: morning-inventory-${{ inputs.location }}
+      
+      - name: Download daily sales
+        uses: actions/download-artifact@v4
+        with:
+          name: daily-sales-${{ inputs.location }}
+      
+      - name: Count evening inventory
+        run: |
+          echo "📦 Taking evening inventory..."
+          
+          echo "" >> inventory.txt
+          echo "EVENING INVENTORY" >> inventory.txt
+          echo "=================" >> inventory.txt
+          echo "Coffee beans: 30 lbs" >> inventory.txt
+          echo "Milk: 8 gallons" >> inventory.txt
+          echo "Cups: 400 units" >> inventory.txt
+          echo "Sugar: 7 lbs" >> inventory.txt
+      
+      - name: Compare morning vs evening
+        run: |
+          echo "════════════════════════════════════════"
+          echo "📊 INVENTORY COMPARISON REPORT"
+          echo "════════════════════════════════════════"
+          echo ""
+          
+          cat inventory.txt
+          
+          echo ""
+          echo "════════════════════════════════════════"
+          echo "📈 USAGE SUMMARY"
+          echo "════════════════════════════════════════"
+          echo "Coffee beans used: 20 lbs"
+          echo "Milk used: 12 gallons"
+          echo "Cups used: 100 units"
+          echo "Sugar used: 3 lbs"
+          echo ""
+          
+          cat daily-sales.txt
+          
+          echo ""
+          echo "✅ Inventory check complete!"
+      
+      - name: Upload final comparison report
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-report-${{ inputs.location }}
+          path: inventory.txt
