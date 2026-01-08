@@ -99,7 +99,7 @@ jobs:
           echo "✅ Rush hour handled successfully!"
 
   evening-closing:
-    if: ${{ inputs.shift == 'closing' }}
+    if: ${{ inputs.shift == 'closing' or 'evening' }}
     name: "Closing: Clean and secure"
     runs-on: ubuntu-latest
     
