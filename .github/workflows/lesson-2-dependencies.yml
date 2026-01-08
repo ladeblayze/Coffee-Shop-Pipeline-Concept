@@ -1,0 +1,122 @@
+name: Lesson 2 - Job Dependencies (Full Day)
+
+on:
+  workflow_dispatch:
+    inputs:
+      location:
+        description: "Which store?"
+        type: choice
+        required: true
+        options:
+          - downtown
+          - airport
+          - mall
+
+jobs:
+  # Job 1: Runs first
+  morning-prep:
+    name: "Step 1: Morning Prep (6 AM)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Arrive at store
+        run: |
+          echo "🌅 Good morning! Arriving at ${{ inputs.location }} store"
+          echo "🕐 Time: 6:00 AM"
+      
+      - name: Setup for the day
+        run: |
+          echo "💡 Turning on lights"
+          echo "☕ Starting coffee machines"
+          echo "🧹 Quick clean before opening"
+          echo "✅ Store is ready!"
+
+  # Job 2: Waits for morning-prep to finish
+  open-store:
+    name: "Step 2: Open Store (7 AM)"
+    runs-on: ubuntu-latest
+    needs: morning-prep  # ← WAITS for morning-prep to complete
+    steps:
+      - name: Open for business
+        run: |
+          echo "🚪 Unlocking doors..."
+          echo "🔓 Turning off alarm"
+          echo "☕ First pot of coffee brewing"
+          echo "✅ ${{ inputs.location }} store is now OPEN!"
+
+  # Job 3: Waits for open-store to finish
+  morning-rush:
+    name: "Step 3: Morning Rush (7-11 AM)"
+    runs-on: ubuntu-latest
+    needs: open-store  # ← WAITS for open-store
+    steps:
+      - name: Serve morning customers
+        run: |
+          echo "👥 Morning rush in progress..."
+          
+          for i in {1..5}; do
+            echo "☕ Making order #$i..."
+            sleep 1
+          done
+          
+          echo "✅ Morning rush complete!"
+
+  # Job 4: Waits for morning-rush
+  lunch-rush:
+    name: "Step 4: Lunch Rush (11 AM - 2 PM)"
+    runs-on: ubuntu-latest
+    needs: morning-rush  # ← WAITS for morning-rush
+    steps:
+      - name: Prepare for lunch crowd
+        run: |
+          echo "🍽️ Lunch rush starting..."
+          echo "☕ Brewing extra coffee"
+          echo "🥪 Restocking sandwiches"
+      
+      - name: Serve lunch customers
+        run: |
+          if [ "${{ inputs.location }}" == "downtown" ]; then
+            echo "🏢 Office workers flooding in - 50+ customers!"
+          else
+            echo "👥 Steady lunch crowd - 30 customers"
+          fi
+          echo "✅ Lunch rush handled!"
+
+  # Job 5: Waits for lunch-rush
+  afternoon-shift:
+    name: "Step 5: Afternoon (2-6 PM)"
+    runs-on: ubuntu-latest
+    needs: lunch-rush  # ← WAITS for lunch-rush
+    steps:
+      - name: Afternoon duties
+        run: |
+          echo "🧹 Cleaning from lunch rush..."
+          echo "📦 Restocking supplies"
+          echo "☕ Brewing fresh coffee for afternoon customers"
+          echo "✅ Ready for afternoon crowd"
+
+  # Job 6: Waits for afternoon-shift
+  closing-time:
+    name: "Step 6: Closing (6-7 PM)"
+    runs-on: ubuntu-latest
+    needs: afternoon-shift  # ← WAITS for afternoon-shift
+    steps:
+      - name: Close the store
+        run: |
+          echo "🌙 Starting closing procedures..."
+          echo "🧹 Deep cleaning equipment"
+          echo "💰 Counting register"
+          echo "🔒 Securing the store"
+          echo "✅ ${{ inputs.location }} store closed successfully!"
+      
+      - name: End of day summary
+        run: |
+          echo ""
+          echo "════════════════════════════════"
+          echo "📊 END OF DAY REPORT"
+          echo "════════════════════════════════"
+          echo "Location: ${{ inputs.location }}"
+          echo "Date: $(date +%Y-%m-%d)"
+          echo "Opening: 7:00 AM"
+          echo "Closing: 7:00 PM"
+          echo "Status: ✅ Successful day!"
+          echo "════════════════════════════════"
