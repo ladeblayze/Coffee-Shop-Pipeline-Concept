@@ -55,7 +55,7 @@ jobs:
             echo "✅ Milk: OK"
             echo "✅ Coffee beans: OK"
             echo "✅ Pastries: Freshly delivered!"
-          elif [ "${{ inputs.location }}" == "university"]; then
+          elif [ "${{ inputs.location }}" == "university" ]; then
             echo "All Inventory is low, please restock!"
           else
             echo "✅ All inventory looks good!"
